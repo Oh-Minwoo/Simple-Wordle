@@ -6,17 +6,15 @@ import Inputs from "../components/Inputs";
 
 interface InputItem {
   id: number;
-  item: string;
+  item: Array<string>;
 }
-
-const words = ["hello", "logic", "limit"];
 
 export default function Main() {
   const nextID = useRef<number>(1); // input의 id값 저장하는 useRef -> input 사이의 차이 두기 위함
   const [inputItems, setInputItems] = useState<InputItem[]>([
     {
       id: 0,
-      item: "",
+      item: [],
     },
   ]); // id와 입력값 useState로 저장
   const [answer, setAnswer] = useState<string[]>([]); //API로 받아온 답 단어 저장하는 useState
@@ -40,27 +38,18 @@ export default function Main() {
     // input element 추가하는 함수, submit 버튼 클릭했을 때 실행
     const input = {
       id: nextID.current,
-      item: "",
+      item: [],
     }; // id만 업데이트해서,
     setInputItems([...inputItems, input]); // inputItmes에 저장 -> 새로운 input element를 위한 준비
     nextID.current += 1;
   };
 
   const onChange = (event: any, index: number) => {
+    if (inputItems[index].item.length > 5) return;
     if (index > inputItems.length) return; // index 변화로 인한 에러 처리
     const value = event.target.value;
-    if (
-      words.filter((item) => item === value).length === 0 &&
-      value.length === 5
-    ) {
-      setButton("Not a word");
-      setDisabled(true);
-    } else {
-      setButton("Submit");
-      setDisabled(false);
-    }
     const inputItemsCopy: InputItem[] = JSON.parse(JSON.stringify(inputItems)); // inputItems 복사본 생성
-    inputItemsCopy[index].item = value; // 복사본의 item 업데이트
+    inputItemsCopy[index].item.push(value); // 복사본의 item 업데이트
 
     setInputItems(inputItemsCopy); // 복사본을 setInputItems를 이용해 원본에 저장
   };
@@ -70,7 +59,7 @@ export default function Main() {
       setDisabled(true);
       return;
     }
-    const letters = inputItems[nextID.current - 1].item.split("");
+    const letters = inputItems[nextID.current - 1].item;
     console.log(letters);
     let i = 0;
     for (let letter of letters) {
@@ -94,12 +83,12 @@ export default function Main() {
   return (
     <div className="App">
       <h1>Wordle</h1>
-      {inputItems.map((item, index) => (
+      {inputItems.map((inputItem, index) => (
         <Inputs
+          styles={{ backgroudnColor: "white" }}
           key={index}
-          val={item.item}
+          val={inputItem.item}
           onChange={(e) => onChange(e, index)}
-          text={`${index + 1}th guess`}
         />
       ))}
       <button onClick={onClick} disabled={disabled}>
